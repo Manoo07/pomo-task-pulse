@@ -1,0 +1,11 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pomodoro Tomato Icon -->
+  <circle cx="16" cy="16" r="14" fill="#f85149" stroke="#c9d1d9" stroke-width="2"/>
+  <!-- Tomato stem -->
+  <rect x="14" y="4" width="4" height="4" fill="#3fb950" rx="1"/>
+  <!-- Tomato highlight -->
+  <circle cx="12" cy="12" r="2" fill="#ffffff" opacity="0.6"/>
+  <!-- Leaves -->
+  <path d="M16 8 C14 6, 18 6, 16 8 Z" fill="#58a6ff"/>
+  <path d="M16 8 C18 6, 16 10, 16 8 Z" fill="#58a6ff"/>
+</svg>
