@@ -8,46 +8,72 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Purple/Indigo Pomofocus Theme */
-    --background: 248 70% 65%;
-    --foreground: 0 0% 100%;
-    
-    --card: 248 50% 55%;
-    --card-foreground: 0 0% 100%;
-    
-    --popover: 248 60% 50%;
-    --popover-foreground: 0 0% 100%;
-    
-    --primary: 231 91% 63%;
-    --primary-foreground: 0 0% 100%;
-    
-    --secondary: 248 40% 70%;
-    --secondary-foreground: 0 0% 100%;
-    
-    --muted: 248 30% 75%;
-    --muted-foreground: 248 20% 90%;
-    
-    --accent: 248 60% 55%;
-    --accent-foreground: 0 0% 100%;
-    
-    --destructive: 0 72% 65%;
-    --destructive-foreground: 0 0% 100%;
-    
-    --border: 248 30% 70%;
-    --input: 248 30% 70%;
-    --ring: 231 91% 63%;
-    
+    /* GitHub Dark Default Theme */
+    /* Background: #0d1117 - Deep gray background */
+    --background: 222 84% 5%;
+    /* Foreground: #c9d1d9 - High-contrast desaturated text */
+    --foreground: 220 9% 82%;
+
+    /* Card background - slightly lighter than main background */
+    --card: 222 84% 8%;
+    --card-foreground: 220 9% 82%;
+
+    /* Popover - similar to card but with more contrast */
+    --popover: 222 84% 6%;
+    --popover-foreground: 220 9% 82%;
+
+    /* Primary: #58a6ff - GitHub signature blue for links and interactive elements */
+    --primary: 212 100% 71%;
+    --primary-foreground: 222 84% 5%;
+
+    /* Secondary: muted gray for secondary elements */
+    --secondary: 222 84% 10%;
+    --secondary-foreground: 220 9% 82%;
+
+    /* Muted: #8b949e - Muted gray for secondary text */
+    --muted: 215 8% 47%;
+    --muted-foreground: 215 8% 47%;
+
+    /* Accent: #58a6ff - Same as primary for consistency */
+    --accent: 212 100% 71%;
+    --accent-foreground: 222 84% 5%;
+
+    /* Destructive: #f85149 - Red for errors */
+    --destructive: 355 91% 65%;
+    --destructive-foreground: 220 9% 82%;
+
+    /* Border variants for subtle visual hierarchy */
+    /* Base border: Subtle standard borders */
+    --border: 215 16% 19%;
+    /* Light border: Very subtle borders for card separators */
+    --border-light: 215 16% 15%;
+    /* Strong border: Slightly more visible borders */
+    --border-strong: 215 8% 28%;
+
+    /* Input borders */
+    --input: 215 16% 19%;
+    --input-focus: 212 100% 71%;
+
+    /* Ring/focus indicator */
+    --ring: 212 100% 71%;
+
     --radius: 0.75rem;
-    
+
     /* Status colors */
-    --success: 142 71% 45%;
+    /* Success: #3fb950 - Green for success states */
+    --success: 127 62% 50%;
     --warning: 38 92% 50%;
-    --info: 199 89% 48%;
-    
-    /* Timer mode colors */
-    --pomodoro: 248 60% 58%;
-    --short-break: 177 70% 55%;
-    --long-break: 248 75% 70%;
+    --info: 212 100% 71%;
+
+    /* Status border colors - Subtle */
+    --success-border: 127 62% 45%;
+    --warning-border: 38 92% 50%;
+    --error-border: 355 91% 55%;
+
+    /* Timer mode colors - adapted to GitHub theme */
+    --pomodoro: 212 100% 71%; /* GitHub blue */
+    --short-break: 127 62% 50%; /* Success green */
+    --long-break: 355 91% 65%; /* Warning/destructive red */
   }
 }
 
@@ -58,7 +84,8 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+      "Helvetica Neue", Arial, sans-serif;
   }
 }
 
@@ -69,5 +96,59 @@ All colors MUST be HSL.
 
   .timer-shadow {
     box-shadow: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+  }
+
+  /* Subtle border utilities for GitHub Dark theme */
+  .border-subtle {
+    @apply border border-border-light;
+  }
+
+  .border-standard {
+    @apply border border-border;
+  }
+
+  .border-prominent {
+    @apply border border-border-strong;
+  }
+
+  /* Focus states with subtle GitHub blue */
+  .focus-github {
+    @apply focus:ring-2 focus:ring-primary/30 focus:border-primary/70;
+  }
+
+  /* Card borders for better separation */
+  .card-border {
+    @apply border border-border-light rounded-lg;
+  }
+
+  /* Interactive element borders */
+  .interactive-border {
+    @apply border border-border hover:border-border-strong focus:border-primary/70 transition-all duration-200;
+  }
+
+  /* Status-specific borders */
+  .border-success {
+    @apply border border-success-border;
+  }
+
+  .border-warning {
+    @apply border border-warning-border;
+  }
+
+  .border-error {
+    @apply border border-error-border;
+  }
+
+  /* Subtle focus states */
+  .focus-ring-success {
+    @apply focus:ring-2 focus:ring-success/30 focus:border-success/70;
+  }
+
+  .focus-ring-warning {
+    @apply focus:ring-2 focus:ring-warning/30 focus:border-warning/70;
+  }
+
+  .focus-ring-error {
+    @apply focus:ring-2 focus:ring-destructive/30 focus:border-error/70;
   }
 }
