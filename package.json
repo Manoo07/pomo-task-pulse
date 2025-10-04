@@ -1,7 +1,15 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "pomofocus",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "A modern Pomodoro timer application with task management",
+  "author": "Your Name",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/pomo-task-pulse.git"
+  },
+  "keywords": ["pomodoro", "timer", "productivity", "react", "typescript"],
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
