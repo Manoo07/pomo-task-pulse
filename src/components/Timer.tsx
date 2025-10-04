@@ -40,17 +40,17 @@ export const Timer = ({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-2xl mx-auto">
       {/* Mode Tabs */}
-      <div className="flex gap-2 mb-8">
+      <div className="flex gap-3 mb-8 justify-center">
         {(['pomodoro', 'shortBreak', 'longBreak'] as TimerMode[]).map((m) => (
           <button
             key={m}
             onClick={() => onSwitchMode(m)}
-            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-smooth ${
+            className={`py-3 px-6 rounded-xl font-medium transition-smooth ${
               mode === m
-                ? 'bg-card text-foreground'
-                : 'bg-transparent text-muted-foreground hover:text-foreground'
+                ? 'bg-white/30 text-white backdrop-blur-sm'
+                : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'
             }`}
           >
             {modeLabels[m]}
@@ -59,55 +59,46 @@ export const Timer = ({
       </div>
 
       {/* Timer Display */}
-      <div
-        className={`${modeColors[mode]} rounded-2xl p-12 timer-shadow transition-smooth`}
-      >
+      <div className={`${modeColors[mode]} rounded-3xl p-16 shadow-2xl`}>
         <div className="text-center">
-          <div className="text-8xl font-bold mb-8 text-white tracking-tight">
+          <div className="text-9xl font-bold mb-4 text-white tracking-tight">
             {formatTime(secondsLeft)}
           </div>
-
-          {/* Controls */}
-          <div className="flex items-center justify-center gap-4">
-            <Button
-              size="lg"
-              onClick={status === 'running' ? onPause : onStart}
-              className="bg-white text-background hover:bg-white/90 px-12 py-6 text-xl font-semibold transition-smooth"
-            >
-              {status === 'running' ? (
-                <>
-                  <Pause className="mr-2 h-5 w-5" />
-                  Pause
-                </>
-              ) : (
-                <>
-                  <Play className="mr-2 h-5 w-5" />
-                  Start
-                </>
-              )}
-            </Button>
-            
-            {status !== 'idle' && (
-              <Button
-                size="lg"
-                variant="ghost"
-                onClick={onReset}
-                className="text-white hover:bg-white/10"
-              >
-                <RotateCcw className="h-5 w-5" />
-              </Button>
-            )}
+          <div className="text-2xl text-white/90 font-medium mb-2">
+            #{Math.floor((Date.now() / 86400000) % 100)} Time to focus!
+          </div>
+          <div className="text-lg text-white/70 italic">
+            No task selected
           </div>
         </div>
       </div>
 
+      {/* Controls */}
+      <div className="flex items-center justify-center gap-4 mt-8">
+        <Button
+          size="lg"
+          onClick={status === 'running' ? onPause : onStart}
+          className="bg-white text-primary hover:bg-white/90 px-16 py-7 text-xl font-semibold rounded-xl shadow-lg"
+        >
+          {status === 'running' ? 'PAUSE' : 'START'}
+        </Button>
+        
+        <Button
+          size="lg"
+          onClick={onReset}
+          className="bg-white/20 text-white hover:bg-white/30 px-12 py-7 text-xl font-semibold rounded-xl"
+        >
+          RESET
+        </Button>
+      </div>
+
       {/* Keyboard Shortcuts Hint */}
-      <div className="mt-6 text-center text-sm text-muted-foreground">
-        <kbd className="px-2 py-1 bg-card rounded">Space</kbd> to start/pause •{' '}
-        <kbd className="px-2 py-1 bg-card rounded">R</kbd> to reset •{' '}
-        <kbd className="px-2 py-1 bg-card rounded">1</kbd>
-        <kbd className="px-2 py-1 bg-card rounded">2</kbd>
-        <kbd className="px-2 py-1 bg-card rounded">3</kbd> to switch modes
+      <div className="mt-8 text-center text-sm text-white/60">
+        <kbd className="px-2 py-1 bg-white/10 rounded">Space</kbd> to start/pause •{' '}
+        <kbd className="px-2 py-1 bg-white/10 rounded">R</kbd> to reset •{' '}
+        <kbd className="px-2 py-1 bg-white/10 rounded">1</kbd>
+        <kbd className="px-2 py-1 bg-white/10 rounded">2</kbd>
+        <kbd className="px-2 py-1 bg-white/10 rounded">3</kbd> to switch modes
       </div>
     </div>
   );

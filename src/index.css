@@ -8,44 +8,46 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* GitHub Dark Default Theme - Pomodoro App Design System */
-    --background: 210 24% 8%;        /* #0d1117 - Deep gray background */
-    --foreground: 213 13% 82%;       /* #c9d1d9 - High contrast text */
-
-    --card: 210 16% 22%;             /* #30363d - Elevated surfaces */
-    --card-foreground: 213 13% 82%;
-
-    --popover: 210 24% 10%;
-    --popover-foreground: 213 13% 82%;
-
-    --primary: 212 96% 68%;          /* #58a6ff - GitHub blue accent */
-    --primary-foreground: 210 24% 8%;
-
-    --secondary: 210 16% 22%;        /* #30363d - Secondary elements */
-    --secondary-foreground: 213 13% 82%;
-
-    --muted: 210 16% 22%;
-    --muted-foreground: 217 10% 58%; /* #8b949e - Muted text */
-
-    --accent: 212 96% 68%;
-    --accent-foreground: 210 24% 8%;
-
-    --success: 133 49% 48%;          /* #3fb950 - Green for success */
-    --success-foreground: 213 13% 82%;
-
-    --destructive: 4 90% 63%;        /* #f85149 - Red for errors/delete */
-    --destructive-foreground: 213 13% 82%;
-
-    --border: 210 16% 22%;           /* #30363d - Borders */
-    --input: 210 16% 22%;
-    --ring: 212 96% 68%;
-
-    --radius: 0.5rem;
-
+    /* Purple/Indigo Pomofocus Theme */
+    --background: 248 70% 65%;
+    --foreground: 0 0% 100%;
+    
+    --card: 248 50% 55%;
+    --card-foreground: 0 0% 100%;
+    
+    --popover: 248 60% 50%;
+    --popover-foreground: 0 0% 100%;
+    
+    --primary: 231 91% 63%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 248 40% 70%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 248 30% 75%;
+    --muted-foreground: 248 20% 90%;
+    
+    --accent: 248 60% 55%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 72% 65%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 248 30% 70%;
+    --input: 248 30% 70%;
+    --ring: 231 91% 63%;
+    
+    --radius: 0.75rem;
+    
+    /* Status colors */
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --info: 199 89% 48%;
+    
     /* Timer mode colors */
-    --pomodoro: 4 90% 63%;           /* Red for focus */
-    --short-break: 133 49% 48%;      /* Green for breaks */
-    --long-break: 212 96% 68%;       /* Blue for long breaks */
+    --pomodoro: 248 60% 58%;
+    --short-break: 177 70% 55%;
+    --long-break: 248 75% 70%;
   }
 }
 
@@ -56,26 +58,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-  }
-
-  /* Custom scrollbar for GitHub theme */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: hsl(var(--background));
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
   }
 }
 
