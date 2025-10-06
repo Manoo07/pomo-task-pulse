@@ -10,7 +10,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
-import { CheckCircle, Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
+import {
+  CheckCircle,
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  Mail,
+  User,
+} from "lucide-react";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -42,7 +50,12 @@ const SignUp = () => {
   };
 
   const validateForm = () => {
-    if (!formData.email || !formData.username || !formData.password || !formData.confirmPassword) {
+    if (
+      !formData.email ||
+      !formData.username ||
+      !formData.password ||
+      !formData.confirmPassword
+    ) {
       setError("All fields are required");
       return false;
     }

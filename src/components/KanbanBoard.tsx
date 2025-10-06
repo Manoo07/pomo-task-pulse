@@ -40,19 +40,25 @@ export const KanbanBoard = ({
   // Normalize status values to lowercase for filtering
   const normalizeStatus = (status: string) => {
     const statusMap: { [key: string]: string } = {
-      'TODO': 'todo',
-      'IN_PROGRESS': 'doing', 
-      'COMPLETED': 'done',
-      'todo': 'todo',
-      'doing': 'doing',
-      'done': 'done'
+      TODO: "todo",
+      IN_PROGRESS: "doing",
+      COMPLETED: "done",
+      todo: "todo",
+      doing: "doing",
+      done: "done",
     };
-    return statusMap[status] || 'todo';
+    return statusMap[status] || "todo";
   };
 
-  const todoTasks = tasks.filter((t) => normalizeStatus(t.status) === "todo" && !t.completed);
-  const doingTasks = tasks.filter((t) => normalizeStatus(t.status) === "doing" && !t.completed);
-  const doneTasks = tasks.filter((t) => normalizeStatus(t.status) === "done" || t.completed);
+  const todoTasks = tasks.filter(
+    (t) => normalizeStatus(t.status) === "todo" && !t.completed
+  );
+  const doingTasks = tasks.filter(
+    (t) => normalizeStatus(t.status) === "doing" && !t.completed
+  );
+  const doneTasks = tasks.filter(
+    (t) => normalizeStatus(t.status) === "done" || t.completed
+  );
 
   const getTrackName = (trackId: string) => {
     return tracks.find((t) => t.id === trackId)?.name || "Unknown Track";

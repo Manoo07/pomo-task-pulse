@@ -1,43 +1,49 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
+import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
   const { login, isLoading } = useAuth();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
     // Clear error when user starts typing
-    if (error) setError('');
+    if (error) setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     const success = await login(formData.email, formData.password);
-    
+
     if (success) {
-      navigate('/');
+      navigate("/");
     } else {
-      setError('Invalid email or password. Please try again.');
+      setError("Invalid email or password. Please try again.");
     }
   };
 
@@ -54,7 +60,9 @@ const Login = () => {
             </div>
             <h1 className="text-2xl font-bold text-white">Pomofocus</h1>
           </div>
-          <p className="text-muted-foreground">Welcome back! Sign in to continue your focus journey.</p>
+          <p className="text-muted-foreground">
+            Welcome back! Sign in to continue your focus journey.
+          </p>
         </div>
 
         <Card className="border border-white/10 bg-card/95">
@@ -92,7 +100,7 @@ const Login = () => {
                   <Input
                     id="password"
                     name="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleInputChange}
@@ -122,7 +130,6 @@ const Login = () => {
                 </Alert>
               )}
 
-
               {/* Submit Button */}
               <Button
                 type="submit"
@@ -135,13 +142,15 @@ const Login = () => {
                     Signing In...
                   </>
                 ) : (
-                  'Sign In'
+                  "Sign In"
                 )}
               </Button>
 
               {/* Sign Up Link */}
               <div className="text-center text-sm">
-                <span className="text-muted-foreground">Don't have an account? </span>
+                <span className="text-muted-foreground">
+                  Don't have an account?{" "}
+                </span>
                 <Link
                   to="/signup"
                   className="text-primary hover:text-primary/80 font-medium"
@@ -165,10 +174,16 @@ const Login = () => {
 
         {/* Demo Credentials */}
         <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-white/10">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">Demo Credentials</h3>
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">
+            Demo Credentials
+          </h3>
           <div className="text-xs text-muted-foreground space-y-1">
-            <p><strong>Email:</strong> demo@pomofocus.com</p>
-            <p><strong>Password:</strong> demo123</p>
+            <p>
+              <strong>Email:</strong> demo@pomofocus.com
+            </p>
+            <p>
+              <strong>Password:</strong> demo123
+            </p>
           </div>
         </div>
       </div>

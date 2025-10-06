@@ -1,5 +1,9 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { WebSocketMessage, UseWebSocketOptions, WebSocketConnectionStatus } from '@/types/websocket';
+import {
+  UseWebSocketOptions,
+  WebSocketConnectionStatus,
+  WebSocketMessage,
+} from "@/types/websocket";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const useWebSocket = ({
   token,
@@ -11,7 +15,8 @@ export const useWebSocket = ({
   maxReconnectAttempts = 5,
 }: UseWebSocketOptions) => {
   const [isConnected, setIsConnected] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<WebSocketConnectionStatus>('disconnected');
+  const [connectionStatus, setConnectionStatus] =
+    useState<WebSocketConnectionStatus>("disconnected");
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
@@ -21,39 +26,40 @@ export const useWebSocket = ({
       return;
     }
 
-    setConnectionStatus('connecting');
+    setConnectionStatus("connecting");
 
     try {
       // Use the same base URL as the API client
-      const wsUrl = process.env.NODE_ENV === 'production' 
-        ? `wss://your-production-domain.com/ws?token=${token}`
-        : `ws://localhost:3000/ws?token=${token}`;
-      
+      const wsUrl =
+        process.env.NODE_ENV === "production"
+          ? `wss://your-production-domain.com/ws?token=${token}`
+          : `ws://localhost:3000/ws?token=${token}`;
+
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log('WebSocket connected');
+        console.log("WebSocket connected");
         setIsConnected(true);
-        setConnectionStatus('connected');
+        setConnectionStatus("connected");
         reconnectAttemptsRef.current = 0;
         onConnect?.();
       };
 
-      ws.onmessage = event => {
+      ws.onmessage = (event) => {
         try {
           const message: WebSocketMessage = JSON.parse(event.data);
-          console.log('WebSocket message received:', message);
+          console.log("WebSocket message received:", message);
           onMessage?.(message);
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          console.error("Error parsing WebSocket message:", error);
         }
       };
 
-      ws.onclose = event => {
-        console.log('WebSocket disconnected:', event.code, event.reason);
+      ws.onclose = (event) => {
+        console.log("WebSocket disconnected:", event.code, event.reason);
         setIsConnected(false);
-        setConnectionStatus('disconnected');
+        setConnectionStatus("disconnected");
         onDisconnect?.();
 
         // Attempt to reconnect if not a clean close
@@ -72,14 +78,14 @@ export const useWebSocket = ({
         }
       };
 
-      ws.onerror = error => {
-        console.error('WebSocket error:', error);
-        setConnectionStatus('error');
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        setConnectionStatus("error");
         onError?.(error);
       };
     } catch (error) {
-      console.error('Failed to create WebSocket connection:', error);
-      setConnectionStatus('error');
+      console.error("Failed to create WebSocket connection:", error);
+      setConnectionStatus("error");
     }
   }, [
     token,
@@ -97,12 +103,12 @@ export const useWebSocket = ({
     }
 
     if (wsRef.current) {
-      wsRef.current.close(1000, 'User initiated disconnect');
+      wsRef.current.close(1000, "User initiated disconnect");
       wsRef.current = null;
     }
 
     setIsConnected(false);
-    setConnectionStatus('disconnected');
+    setConnectionStatus("disconnected");
   }, []);
 
   const sendMessage = useCallback((message: Partial<WebSocketMessage>) => {

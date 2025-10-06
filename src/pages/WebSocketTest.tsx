@@ -1,46 +1,46 @@
-import React, { useState } from 'react';
-import { useWebSocket } from '@/hooks/useWebSocket';
-import { WebSocketMessage } from '@/types/websocket';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { useAuth } from '@/contexts/AuthContext';
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { WebSocketMessage } from "@/types/websocket";
+import React, { useState } from "react";
 
 export const WebSocketTest: React.FC = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<WebSocketMessage[]>([]);
-  const [testMessage, setTestMessage] = useState('');
+  const [testMessage, setTestMessage] = useState("");
 
   const { isConnected, connectionStatus, sendMessage } = useWebSocket({
-    token: user?.accessToken || '',
+    token: user?.accessToken || "",
     onMessage: (message: WebSocketMessage) => {
-      console.log('Test page received message:', message);
-      setMessages(prev => [...prev, message]);
+      console.log("Test page received message:", message);
+      setMessages((prev) => [...prev, message]);
     },
     onConnect: () => {
-      console.log('WebSocket connected in test page');
+      console.log("WebSocket connected in test page");
     },
     onDisconnect: () => {
-      console.log('WebSocket disconnected in test page');
+      console.log("WebSocket disconnected in test page");
     },
     onError: (error) => {
-      console.error('WebSocket error in test page:', error);
+      console.error("WebSocket error in test page:", error);
     },
   });
 
   const sendTestMessage = () => {
     if (testMessage.trim()) {
       sendMessage({
-        type: 'NOTIFICATION',
-        userId: user?.id || '',
+        type: "NOTIFICATION",
+        userId: user?.id || "",
         data: {
-          title: 'Test Message',
+          title: "Test Message",
           message: testMessage,
-          type: 'info'
+          type: "info",
         },
         timestamp: new Date().toISOString(),
       });
-      setTestMessage('');
+      setTestMessage("");
     }
   };
 
@@ -52,15 +52,20 @@ export const WebSocketTest: React.FC = () => {
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         <Card className="p-6">
-          <h1 className="text-2xl font-bold text-white mb-4">WebSocket Test Page</h1>
-          
+          <h1 className="text-2xl font-bold text-white mb-4">
+            WebSocket Test Page
+          </h1>
+
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className={`w-3 h-3 rounded-full ${
-                isConnected ? 'bg-green-500' : 'bg-red-500'
-              }`}></div>
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  isConnected ? "bg-green-500" : "bg-red-500"
+                }`}
+              ></div>
               <span className="text-white">
-                Status: {connectionStatus} {isConnected ? '(Connected)' : '(Disconnected)'}
+                Status: {connectionStatus}{" "}
+                {isConnected ? "(Connected)" : "(Disconnected)"}
               </span>
             </div>
 
@@ -71,14 +76,14 @@ export const WebSocketTest: React.FC = () => {
                 placeholder="Enter test message..."
                 className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/50"
               />
-              <Button 
+              <Button
                 onClick={sendTestMessage}
                 disabled={!isConnected || !testMessage.trim()}
                 className="bg-primary hover:bg-primary/90"
               >
                 Send Test Message
               </Button>
-              <Button 
+              <Button
                 onClick={clearMessages}
                 variant="outline"
                 className="border-white/20 text-white hover:bg-white/10"
@@ -90,8 +95,10 @@ export const WebSocketTest: React.FC = () => {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-xl font-bold text-white mb-4">Received Messages</h2>
-          
+          <h2 className="text-xl font-bold text-white mb-4">
+            Received Messages
+          </h2>
+
           {messages.length === 0 ? (
             <p className="text-white/70">No messages received yet...</p>
           ) : (

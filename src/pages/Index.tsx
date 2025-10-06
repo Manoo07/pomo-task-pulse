@@ -53,95 +53,100 @@ const Index = () => {
   const [currentTaskId, setCurrentTaskId] = useState<string | undefined>();
 
   // WebSocket integration
-  const { isConnected: wsConnected, sendMessage: wsSendMessage } = useWebSocket({
-    token: user?.accessToken || '',
-    onMessage: (message) => {
-      console.log('WebSocket message received:', message);
-      
-      switch (message.type) {
-        case 'TASK_CREATED':
-          setTasks(prev => [...prev, message.data]);
-          break;
-          
-        case 'TASK_UPDATED':
-          setTasks(prev =>
-            prev.map(task =>
-              task.id === message.data.id ? message.data : task
-            )
-          );
-          break;
-          
-        case 'TASK_DELETED':
-          setTasks(prev =>
-            prev.filter(task => task.id !== message.data.taskId)
-          );
-          break;
-          
-        case 'TASK_STATUS_CHANGED':
-          setTasks(prev =>
-            prev.map(task =>
-              task.id === message.data.taskId
-                ? { ...task, status: message.data.status }
-                : task
-            )
-          );
-          break;
-          
-        case 'TRACK_CREATED':
-          setTracks(prev => [...prev, message.data]);
-          break;
-          
-        case 'TRACK_UPDATED':
-          setTracks(prev =>
-            prev.map(track =>
-              track.id === message.data.id ? message.data : track
-            )
-          );
-          break;
-          
-        case 'TRACK_DELETED':
-          setTracks(prev =>
-            prev.filter(track => track.id !== message.data.trackId)
-          );
-          break;
-          
-        case 'SESSION_START':
-          // Handle session start - could update UI state
-          console.log('Session started:', message.data);
-          break;
-          
-        case 'SESSION_END':
-          // Handle session end - update task completed pomodoros
-          if (message.data.taskId) {
-            setTasks(prev =>
-              prev.map(task =>
+  const { isConnected: wsConnected, sendMessage: wsSendMessage } = useWebSocket(
+    {
+      token: user?.accessToken || "",
+      onMessage: (message) => {
+        console.log("WebSocket message received:", message);
+
+        switch (message.type) {
+          case "TASK_CREATED":
+            setTasks((prev) => [...prev, message.data]);
+            break;
+
+          case "TASK_UPDATED":
+            setTasks((prev) =>
+              prev.map((task) =>
+                task.id === message.data.id ? message.data : task
+              )
+            );
+            break;
+
+          case "TASK_DELETED":
+            setTasks((prev) =>
+              prev.filter((task) => task.id !== message.data.taskId)
+            );
+            break;
+
+          case "TASK_STATUS_CHANGED":
+            setTasks((prev) =>
+              prev.map((task) =>
                 task.id === message.data.taskId
-                  ? { ...task, completedPomodoros: message.data.completedPomodoros }
+                  ? { ...task, status: message.data.status }
                   : task
               )
             );
-          }
-          break;
-          
-        case 'NOTIFICATION':
-          // Show notification to user
-          console.log('Notification:', message.data.message);
-          break;
-          
-        default:
-          console.log('Unhandled WebSocket message type:', message.type);
-      }
-    },
-    onConnect: () => {
-      console.log('WebSocket connected - real-time sync enabled');
-    },
-    onDisconnect: () => {
-      console.log('WebSocket disconnected - falling back to polling');
-    },
-    onError: (error) => {
-      console.error('WebSocket error:', error);
-    },
-  });
+            break;
+
+          case "TRACK_CREATED":
+            setTracks((prev) => [...prev, message.data]);
+            break;
+
+          case "TRACK_UPDATED":
+            setTracks((prev) =>
+              prev.map((track) =>
+                track.id === message.data.id ? message.data : track
+              )
+            );
+            break;
+
+          case "TRACK_DELETED":
+            setTracks((prev) =>
+              prev.filter((track) => track.id !== message.data.trackId)
+            );
+            break;
+
+          case "SESSION_START":
+            // Handle session start - could update UI state
+            console.log("Session started:", message.data);
+            break;
+
+          case "SESSION_END":
+            // Handle session end - update task completed pomodoros
+            if (message.data.taskId) {
+              setTasks((prev) =>
+                prev.map((task) =>
+                  task.id === message.data.taskId
+                    ? {
+                        ...task,
+                        completedPomodoros: message.data.completedPomodoros,
+                      }
+                    : task
+                )
+              );
+            }
+            break;
+
+          case "NOTIFICATION":
+            // Show notification to user
+            console.log("Notification:", message.data.message);
+            break;
+
+          default:
+            console.log("Unhandled WebSocket message type:", message.type);
+        }
+      },
+      onConnect: () => {
+        console.log("WebSocket connected - real-time sync enabled");
+      },
+      onDisconnect: () => {
+        console.log("WebSocket disconnected - falling back to polling");
+      },
+      onError: (error) => {
+        console.error("WebSocket error:", error);
+      },
+    }
+  );
 
   // Ref for timer start button
   const startButtonRef = useRef<HTMLButtonElement>(null);
@@ -456,11 +461,13 @@ const Index = () => {
           <div className="flex items-center gap-4">
             {/* WebSocket Connection Status */}
             <div className="flex items-center gap-2 text-sm">
-              <div className={`w-2 h-2 rounded-full ${
-                wsConnected ? 'bg-green-500' : 'bg-red-500'
-              }`}></div>
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  wsConnected ? "bg-green-500" : "bg-red-500"
+                }`}
+              ></div>
               <span className="text-white/70">
-                {wsConnected ? 'Live Sync' : 'Offline'}
+                {wsConnected ? "Live Sync" : "Offline"}
               </span>
             </div>
 

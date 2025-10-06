@@ -11,8 +11,10 @@ export const API_ENDPOINTS = {
     REFRESH: `${API_BASE_URL}/api/auth/refresh`,
     LOGOUT: `${API_BASE_URL}/api/auth/logout`,
     ME: `${API_BASE_URL}/api/auth/me`,
-    CHECK_EMAIL: (email: string) => `${API_BASE_URL}/api/auth/check-email/${email}`,
-    CHECK_USERNAME: (username: string) => `${API_BASE_URL}/api/auth/check-username/${username}`,
+    CHECK_EMAIL: (email: string) =>
+      `${API_BASE_URL}/api/auth/check-email/${email}`,
+    CHECK_USERNAME: (username: string) =>
+      `${API_BASE_URL}/api/auth/check-username/${username}`,
   },
   USERS: {
     PROFILE: `${API_BASE_URL}/api/users/profile`,

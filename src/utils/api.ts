@@ -76,7 +76,7 @@ class ApiClient {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
-    
+
     // Redirect to login page
     window.location.href = "/login";
   }
@@ -108,7 +108,7 @@ class ApiClient {
       // Handle 401 Unauthorized - token expired
       if (response.status === 401 && requireAuth) {
         console.log("Token expired, attempting refresh...");
-        
+
         const refreshSuccess = await this.refreshToken();
         if (refreshSuccess) {
           // Retry the original request with new token
@@ -117,16 +117,16 @@ class ApiClient {
             method,
             headers: newHeaders,
           };
-          
+
           if (body && method !== "GET") {
             retryConfig.body = JSON.stringify(body);
           }
-          
+
           const retryResponse = await fetch(url, retryConfig);
           if (!retryResponse.ok) {
             throw new Error(`HTTP error! status: ${retryResponse.status}`);
           }
-          
+
           const retryData = await retryResponse.json();
           return retryData;
         } else {

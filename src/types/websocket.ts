@@ -1,40 +1,39 @@
 // WebSocket message types for real-time synchronization
 export interface WebSocketMessage {
-  type: 
-    // Session Events
-    | 'SESSION_START'
-    | 'SESSION_END'
-    | 'SESSION_PAUSE'
-    | 'SESSION_RESUME'
-    | 'SESSION_UPDATE'
-    | 'TIMER_SYNC'
+  type: // Session Events
+  | "SESSION_START"
+    | "SESSION_END"
+    | "SESSION_PAUSE"
+    | "SESSION_RESUME"
+    | "SESSION_UPDATE"
+    | "TIMER_SYNC"
 
     // Task Events
-    | 'TASK_CREATED'
-    | 'TASK_UPDATED'
-    | 'TASK_DELETED'
-    | 'TASK_STATUS_CHANGED'
-    | 'TASK_PRIORITY_CHANGED'
+    | "TASK_CREATED"
+    | "TASK_UPDATED"
+    | "TASK_DELETED"
+    | "TASK_STATUS_CHANGED"
+    | "TASK_PRIORITY_CHANGED"
 
     // Track Events
-    | 'TRACK_CREATED'
-    | 'TRACK_UPDATED'
-    | 'TRACK_DELETED'
+    | "TRACK_CREATED"
+    | "TRACK_UPDATED"
+    | "TRACK_DELETED"
 
     // Settings Events
-    | 'SETTINGS_UPDATED'
+    | "SETTINGS_UPDATED"
 
     // Analytics Events
-    | 'ANALYTICS_UPDATED'
-    | 'STREAK_UPDATED'
+    | "ANALYTICS_UPDATED"
+    | "STREAK_UPDATED"
 
     // Notification Events
-    | 'NOTIFICATION'
-    | 'ACHIEVEMENT_UNLOCKED'
+    | "NOTIFICATION"
+    | "ACHIEVEMENT_UNLOCKED"
 
     // Connection Events
-    | 'CONNECTION_ESTABLISHED'
-    | 'ERROR';
+    | "CONNECTION_ESTABLISHED"
+    | "ERROR";
 
   userId: string;
   data: any;
@@ -45,7 +44,7 @@ export interface WebSocketMessage {
 // Session-specific WebSocket data
 export interface SessionWebSocketData {
   sessionId: string;
-  type: 'POMODORO' | 'SHORT_BREAK' | 'LONG_BREAK';
+  type: "POMODORO" | "SHORT_BREAK" | "LONG_BREAK";
   duration: number;
   startTime: string;
   taskId?: string;
@@ -59,8 +58,8 @@ export interface SessionWebSocketData {
 export interface TaskWebSocketData {
   taskId: string;
   task?: any; // Full task object
-  status?: 'TODO' | 'IN_PROGRESS' | 'COMPLETED';
-  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  status?: "TODO" | "IN_PROGRESS" | "COMPLETED";
+  priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 }
 
 // Track-specific WebSocket data
@@ -84,16 +83,16 @@ export interface AnalyticsWebSocketData {
 export interface NotificationWebSocketData {
   title: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   achievement?: string;
 }
 
 // WebSocket connection status
-export type WebSocketConnectionStatus = 
-  | 'connecting' 
-  | 'connected' 
-  | 'disconnected' 
-  | 'error';
+export type WebSocketConnectionStatus =
+  | "connecting"
+  | "connected"
+  | "disconnected"
+  | "error";
 
 // WebSocket hook options
 export interface UseWebSocketOptions {

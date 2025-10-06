@@ -66,7 +66,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (storedUser && accessToken) {
           const userData = JSON.parse(storedUser);
           setUser(userData);
-          
+
           // Verify token is still valid by checking auth status
           checkAuthStatus();
         }
