@@ -12,7 +12,6 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useTimer } from "@/hooks/useTimer";
-import { apiClient } from "@/utils/api";
 import {
   LearningTrack,
   Priority,
@@ -22,8 +21,9 @@ import {
   TaskStatus,
   TimerMode,
 } from "@/types/pomodoro";
+import { apiClient } from "@/utils/api";
 import { LogOut, Mail, Plus, User } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const defaultSettings: Settings = {
@@ -58,30 +58,54 @@ const Index = () => {
   useEffect(() => {
     const loadData = async () => {
       if (!user) return;
-      
+
       try {
         setIsLoading(true);
-        
+
         // Load tasks, tracks, and sessions in parallel
-        const [tasksResponse, tracksResponse, sessionsResponse] = await Promise.all([
-          apiClient.getTasks(),
-          apiClient.getTracks(),
-          apiClient.getSessionHistory({ limit: 50 })
-        ]);
+        const [tasksResponse, tracksResponse, sessionsResponse] =
+          await Promise.all([
+            apiClient.getTasks(),
+            apiClient.getTracks(),
+            apiClient.getSessionHistory({ limit: 50 }),
+          ]);
+
+        // Debug: Log the actual API responses
+        console.log("API Responses:", {
+          tasks: tasksResponse,
+          tracks: tracksResponse,
+          sessions: sessionsResponse,
+        });
 
         if (tasksResponse.success) {
-          setTasks(tasksResponse.data || []);
+          const tasksData = Array.isArray(tasksResponse.data) ? tasksResponse.data : [];
+          setTasks(tasksData);
+        } else {
+          console.error("Failed to load tasks:", tasksResponse.message);
+          setTasks([]);
         }
-        
+
         if (tracksResponse.success) {
-          setTracks(tracksResponse.data || []);
+          const tracksData = Array.isArray(tracksResponse.data) ? tracksResponse.data : [];
+          setTracks(tracksData);
+        } else {
+          console.error("Failed to load tracks:", tracksResponse.message);
+          setTracks([]);
         }
-        
+
         if (sessionsResponse.success) {
-          setSessions(sessionsResponse.data || []);
+          const sessionsData = Array.isArray(sessionsResponse.data) ? sessionsResponse.data : [];
+          setSessions(sessionsData);
+        } else {
+          console.error("Failed to load sessions:", sessionsResponse.message);
+          setSessions([]);
         }
       } catch (error) {
         console.error("Failed to load data:", error);
+        // Set empty arrays as fallback
+        setTasks([]);
+        setTracks([]);
+        setSessions([]);
       } finally {
         setIsLoading(false);
       }
@@ -112,17 +136,18 @@ const Index = () => {
 
     try {
       const estimate = parseFloat(newTaskEstimate) || 1;
-      
+
       const taskData = {
         title: newTaskTitle.trim(),
         description: "",
-        priority: newTaskPriority === "none" ? "MEDIUM" : newTaskPriority.toUpperCase(),
+        priority:
+          newTaskPriority === "none" ? "MEDIUM" : newTaskPriority.toUpperCase(),
         estimatedPomodoros: estimate,
         trackId: newTaskTrack,
       };
 
       const response = await apiClient.createTask(taskData);
-      
+
       if (response.success) {
         setTasks((prev) => [...prev, response.data]);
         setNewTaskTitle("");
@@ -138,7 +163,7 @@ const Index = () => {
   const handleDeleteTask = async (id: string) => {
     try {
       const response = await apiClient.deleteTask(id);
-      
+
       if (response.success) {
         setTasks((prev) => prev.filter((t) => t.id !== id));
         if (currentTaskId === id) {
@@ -154,9 +179,10 @@ const Index = () => {
     try {
       const response = await apiClient.updateTask(id, {
         status: "COMPLETED",
-        completedPomodoros: tasks.find(t => t.id === id)?.estimatedPomodoros || 0
+        completedPomodoros:
+          tasks.find((t) => t.id === id)?.estimatedPomodoros || 0,
       });
-      
+
       if (response.success) {
         setTasks((prev) =>
           prev.map((task) =>
@@ -184,12 +210,19 @@ const Index = () => {
   const handleStatusChange = async (id: string, status: TaskStatus) => {
     try {
       // Convert frontend status to backend status
-      const backendStatus = status === "todo" ? "TODO" : 
-                           status === "doing" ? "IN_PROGRESS" : 
-                           status === "done" ? "COMPLETED" : "TODO";
+      const backendStatus =
+        status === "todo"
+          ? "TODO"
+          : status === "doing"
+          ? "IN_PROGRESS"
+          : status === "done"
+          ? "COMPLETED"
+          : "TODO";
 
-      const response = await apiClient.updateTask(id, { status: backendStatus });
-      
+      const response = await apiClient.updateTask(id, {
+        status: backendStatus,
+      });
+
       if (response.success) {
         setTasks((prev) =>
           prev.map((task) => {
@@ -220,16 +253,20 @@ const Index = () => {
 
   const handleTimerStart = async () => {
     if (!currentTaskId) return;
-    
+
     try {
-      const sessionType = mode === "pomodoro" ? "POMODORO" : 
-                         mode === "shortBreak" ? "SHORT_BREAK" : "LONG_BREAK";
-      
+      const sessionType =
+        mode === "pomodoro"
+          ? "POMODORO"
+          : mode === "shortBreak"
+          ? "SHORT_BREAK"
+          : "LONG_BREAK";
+
       const response = await apiClient.startSession({
         type: sessionType,
         taskId: currentTaskId,
       });
-      
+
       if (response.success) {
         setCurrentSessionId(response.data.id);
       }
@@ -240,21 +277,24 @@ const Index = () => {
 
   const handleTimerComplete = async (completedMode: TimerMode) => {
     if (!currentSessionId) return;
-    
+
     try {
-      const duration = completedMode === "pomodoro" ? settings.pomodoroDuration * 60 :
-                      completedMode === "shortBreak" ? settings.shortBreakDuration * 60 :
-                      settings.longBreakDuration * 60;
-      
+      const duration =
+        completedMode === "pomodoro"
+          ? settings.pomodoroDuration * 60
+          : completedMode === "shortBreak"
+          ? settings.shortBreakDuration * 60
+          : settings.longBreakDuration * 60;
+
       await apiClient.completeSession(currentSessionId, duration);
       setCurrentSessionId(null);
-      
+
       // Update task completed pomodoros if it was a pomodoro session
       if (completedMode === "pomodoro" && currentTaskId) {
-        const currentTask = tasks.find(t => t.id === currentTaskId);
+        const currentTask = tasks.find((t) => t.id === currentTaskId);
         if (currentTask) {
           await apiClient.updateTask(currentTaskId, {
-            completedPomodoros: (currentTask.completedPomodoros || 0) + 1
+            completedPomodoros: (currentTask.completedPomodoros || 0) + 1,
           });
         }
       }
@@ -387,7 +427,7 @@ const Index = () => {
                   <SelectValue placeholder="Select Track..." />
                 </SelectTrigger>
                 <SelectContent className="bg-card border border-white/10">
-                  {tracks.map((track) => (
+                  {Array.isArray(tracks) && tracks.map((track) => (
                     <SelectItem
                       key={track.id}
                       value={track.id}
