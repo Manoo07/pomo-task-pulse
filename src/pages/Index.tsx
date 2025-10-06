@@ -77,27 +77,33 @@ const Index = () => {
           sessions: sessionsResponse,
         });
 
-        if (tasksResponse.success) {
-          const tasksData = Array.isArray(tasksResponse.data) ? tasksResponse.data : [];
+        if ((tasksResponse as any).success) {
+          const tasksData = Array.isArray((tasksResponse as any).data)
+            ? (tasksResponse as any).data
+            : [];
           setTasks(tasksData);
         } else {
-          console.error("Failed to load tasks:", tasksResponse.message);
+          console.error("Failed to load tasks:", (tasksResponse as any).message);
           setTasks([]);
         }
 
-        if (tracksResponse.success) {
-          const tracksData = Array.isArray(tracksResponse.data) ? tracksResponse.data : [];
+        if ((tracksResponse as any).success) {
+          const tracksData = Array.isArray((tracksResponse as any).data?.tracks)
+            ? (tracksResponse as any).data.tracks
+            : [];
           setTracks(tracksData);
         } else {
-          console.error("Failed to load tracks:", tracksResponse.message);
+          console.error("Failed to load tracks:", (tracksResponse as any).message);
           setTracks([]);
         }
 
-        if (sessionsResponse.success) {
-          const sessionsData = Array.isArray(sessionsResponse.data) ? sessionsResponse.data : [];
+        if ((sessionsResponse as any).success) {
+          const sessionsData = Array.isArray((sessionsResponse as any).data)
+            ? (sessionsResponse as any).data
+            : [];
           setSessions(sessionsData);
         } else {
-          console.error("Failed to load sessions:", sessionsResponse.message);
+          console.error("Failed to load sessions:", (sessionsResponse as any).message);
           setSessions([]);
         }
       } catch (error) {
@@ -427,15 +433,16 @@ const Index = () => {
                   <SelectValue placeholder="Select Track..." />
                 </SelectTrigger>
                 <SelectContent className="bg-card border border-white/10">
-                  {Array.isArray(tracks) && tracks.map((track) => (
-                    <SelectItem
-                      key={track.id}
-                      value={track.id}
-                      className="text-foreground hover:bg-card/50"
-                    >
-                      {track.name}
-                    </SelectItem>
-                  ))}
+                  {Array.isArray(tracks) &&
+                    tracks.map((track) => (
+                      <SelectItem
+                        key={track.id}
+                        value={track.id}
+                        className="text-foreground hover:bg-card/50"
+                      >
+                        {track.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
 

@@ -53,15 +53,16 @@ const Settings = () => {
         console.log("Tracks API Response:", tracksResponse);
 
         if ((settingsResponse as any).success) {
-          const settingsData = (settingsResponse as any).data?.settings || defaultSettings;
+          const settingsData =
+            (settingsResponse as any).data?.settings || defaultSettings;
           console.log("Parsed settings data:", settingsData);
           setSettings(settingsData);
           setLocalSettings(settingsData);
         }
 
         if ((tracksResponse as any).success) {
-          const tracksData = Array.isArray((tracksResponse as any).data)
-            ? (tracksResponse as any).data
+          const tracksData = Array.isArray((tracksResponse as any).data?.tracks)
+            ? (tracksResponse as any).data.tracks
             : [];
           setTracks(tracksData);
         }
