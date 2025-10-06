@@ -37,9 +37,22 @@ export const KanbanBoard = ({
   onDeleteTask,
   onStartTimer,
 }: KanbanBoardProps) => {
-  const todoTasks = tasks.filter((t) => t.status === "todo" && !t.completed);
-  const doingTasks = tasks.filter((t) => t.status === "doing" && !t.completed);
-  const doneTasks = tasks.filter((t) => t.status === "done" || t.completed);
+  // Normalize status values to lowercase for filtering
+  const normalizeStatus = (status: string) => {
+    const statusMap: { [key: string]: string } = {
+      'TODO': 'todo',
+      'IN_PROGRESS': 'doing', 
+      'COMPLETED': 'done',
+      'todo': 'todo',
+      'doing': 'doing',
+      'done': 'done'
+    };
+    return statusMap[status] || 'todo';
+  };
+
+  const todoTasks = tasks.filter((t) => normalizeStatus(t.status) === "todo" && !t.completed);
+  const doingTasks = tasks.filter((t) => normalizeStatus(t.status) === "doing" && !t.completed);
+  const doneTasks = tasks.filter((t) => normalizeStatus(t.status) === "done" || t.completed);
 
   const getTrackName = (trackId: string) => {
     return tracks.find((t) => t.id === trackId)?.name || "Unknown Track";
@@ -100,7 +113,7 @@ export const KanbanBoard = ({
         </div>
 
         <div className="flex gap-2">
-          {task.status === "todo" && (
+          {normalizeStatus(task.status) === "todo" && (
             <Button
               size="sm"
               onClick={(e) => {
@@ -113,7 +126,7 @@ export const KanbanBoard = ({
               Select & Start
             </Button>
           )}
-          {task.status === "doing" && (
+          {normalizeStatus(task.status) === "doing" && (
             <Button
               size="sm"
               onClick={(e) => {
