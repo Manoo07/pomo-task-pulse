@@ -20,6 +20,7 @@ import {
   Settings,
   Task,
   TaskStatus,
+  TimerMode,
 } from "@/types/pomodoro";
 import { LogOut, Mail, Plus, User } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
@@ -215,6 +216,53 @@ const Index = () => {
     }
   };
 
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+
+  const handleTimerStart = async () => {
+    if (!currentTaskId) return;
+    
+    try {
+      const sessionType = mode === "pomodoro" ? "POMODORO" : 
+                         mode === "shortBreak" ? "SHORT_BREAK" : "LONG_BREAK";
+      
+      const response = await apiClient.startSession({
+        type: sessionType,
+        taskId: currentTaskId,
+      });
+      
+      if (response.success) {
+        setCurrentSessionId(response.data.id);
+      }
+    } catch (error) {
+      console.error("Failed to start session:", error);
+    }
+  };
+
+  const handleTimerComplete = async (completedMode: TimerMode) => {
+    if (!currentSessionId) return;
+    
+    try {
+      const duration = completedMode === "pomodoro" ? settings.pomodoroDuration * 60 :
+                      completedMode === "shortBreak" ? settings.shortBreakDuration * 60 :
+                      settings.longBreakDuration * 60;
+      
+      await apiClient.completeSession(currentSessionId, duration);
+      setCurrentSessionId(null);
+      
+      // Update task completed pomodoros if it was a pomodoro session
+      if (completedMode === "pomodoro" && currentTaskId) {
+        const currentTask = tasks.find(t => t.id === currentTaskId);
+        if (currentTask) {
+          await apiClient.updateTask(currentTaskId, {
+            completedPomodoros: (currentTask.completedPomodoros || 0) + 1
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Failed to complete session:", error);
+    }
+  };
+
   const {
     mode,
     status,
@@ -226,8 +274,8 @@ const Index = () => {
     switchMode,
   } = useTimer({
     settings,
-    onTimerComplete: () => {},
-    onTimerStart: () => {},
+    onTimerComplete: handleTimerComplete,
+    onTimerStart: handleTimerStart,
   });
 
   return (
