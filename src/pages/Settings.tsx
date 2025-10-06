@@ -7,8 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Clock, Zap, Bell, Target, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { apiClient } from '@/utils/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const defaultSettings: SettingsType = {
   pomodoroDuration: 25,
@@ -23,44 +26,148 @@ const defaultSettings: SettingsType = {
 };
 
 const Settings = () => {
-  const [settings, setSettings] = useLocalStorage<SettingsType>('pomodoro-settings', defaultSettings);
-  const [tracks, setTracks] = useLocalStorage<LearningTrack[]>('learning-tracks', [
-    { id: '1', name: 'Machine Learning' },
-    { id: '2', name: 'Computer Vision' },
-    { id: '3', name: 'LLMs & NLP' },
-  ]);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [settings, setSettings] = useState<SettingsType>(defaultSettings);
+  const [tracks, setTracks] = useState<LearningTrack[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   
   const [newTrackName, setNewTrackName] = useState('');
   const [localSettings, setLocalSettings] = useState(settings);
 
-  const handleSave = () => {
-    setSettings(localSettings);
-    toast({
-      title: 'Settings saved',
-      description: 'Your preferences have been updated',
-    });
+  // Load settings and tracks from API
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user) return;
+      
+      try {
+        setIsLoading(true);
+        
+        const [settingsResponse, tracksResponse] = await Promise.all([
+          apiClient.getSettings(),
+          apiClient.getTracks(),
+        ]);
+
+        if ((settingsResponse as any).success) {
+          const settingsData = (settingsResponse as any).data || defaultSettings;
+          setSettings(settingsData);
+          setLocalSettings(settingsData);
+        }
+
+        if ((tracksResponse as any).success) {
+          const tracksData = Array.isArray((tracksResponse as any).data) ? (tracksResponse as any).data : [];
+          setTracks(tracksData);
+        }
+      } catch (error) {
+        console.error("Failed to load settings:", error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load settings',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user]);
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      
+      const settingsData = {
+        pomodoroDuration: localSettings.pomodoroDuration,
+        shortBreakDuration: localSettings.shortBreakDuration,
+        longBreakDuration: localSettings.longBreakDuration,
+        longBreakInterval: localSettings.longBreakInterval,
+        autoStartBreaks: localSettings.autoStartBreak,
+        autoStartPomodoros: localSettings.autoStartPomodoro,
+        soundEnabled: localSettings.soundEnabled,
+        desktopNotifications: localSettings.notificationsEnabled,
+        emailNotifications: false, // Default value
+        theme: 'dark', // Default value
+        language: 'en', // Default value
+      };
+
+      const response = await apiClient.updateSettings(settingsData);
+      
+      if ((response as any).success) {
+        setSettings(localSettings);
+        toast({
+          title: 'Settings saved',
+          description: 'Your preferences have been updated',
+        });
+      } else {
+        throw new Error((response as any).message || 'Failed to save settings');
+      }
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save settings',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleAddTrack = () => {
-    if (newTrackName.trim()) {
-      const newTrack: LearningTrack = {
-        id: Date.now().toString(),
+  const handleAddTrack = async () => {
+    if (!newTrackName.trim()) return;
+    
+    try {
+      const trackData = {
         name: newTrackName.trim(),
+        description: '',
+        color: '#3B82F6', // Default blue color
+        icon: '📚', // Default icon
       };
-      setTracks([...tracks, newTrack]);
-      setNewTrackName('');
+
+      const response = await apiClient.createTrack(trackData);
+      
+      if ((response as any).success) {
+        setTracks(prev => [...prev, (response as any).data]);
+        setNewTrackName('');
+        toast({
+          title: 'Track added',
+          description: newTrackName.trim(),
+        });
+      } else {
+        throw new Error((response as any).message || 'Failed to create track');
+      }
+    } catch (error) {
+      console.error("Failed to create track:", error);
       toast({
-        title: 'Track added',
-        description: newTrackName.trim(),
+        title: 'Error',
+        description: 'Failed to create track',
+        variant: 'destructive',
       });
     }
   };
 
-  const handleDeleteTrack = (id: string) => {
-    setTracks(tracks.filter(t => t.id !== id));
-    toast({
-      title: 'Track deleted',
-    });
+  const handleDeleteTrack = async (id: string) => {
+    try {
+      const response = await apiClient.deleteTrack(id);
+      
+      if ((response as any).success) {
+        setTracks(prev => prev.filter(t => t.id !== id));
+        toast({
+          title: 'Track deleted',
+        });
+      } else {
+        throw new Error((response as any).message || 'Failed to delete track');
+      }
+    } catch (error) {
+      console.error("Failed to delete track:", error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete track',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -74,10 +181,10 @@ const Settings = () => {
             <h1 className="text-xl font-bold text-white">Pomofocus</h1>
           </div>
           <nav className="flex gap-2">
-            <Button variant="ghost" className="text-white/90" onClick={() => window.location.href = '/'}>
+            <Button variant="ghost" className="text-white/90" onClick={() => navigate('/')}>
               Timer
             </Button>
-            <Button variant="ghost" className="text-white/90" onClick={() => window.location.href = '/reports'}>
+            <Button variant="ghost" className="text-white/90" onClick={() => navigate('/reports')}>
               Reports
             </Button>
             <Button variant="default" className="bg-white/20 text-white hover:bg-white/30">
@@ -88,7 +195,16 @@ const Settings = () => {
       </header>
 
       <main className="container mx-auto px-4 py-12 max-w-3xl space-y-6">
-        {/* Timer Settings */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading settings...</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Timer Settings */}
         <Card className="bg-card/50 border-white/10 p-8">
           <div className="flex items-center gap-2 mb-6">
             <Clock className="h-5 w-5 text-white" />
@@ -242,9 +358,10 @@ const Settings = () => {
 
         <Button 
           onClick={handleSave}
+          disabled={isSaving}
           className="w-full bg-white text-primary hover:bg-white/90 py-6 text-lg font-semibold"
         >
-          Save Settings
+          {isSaving ? 'Saving...' : 'Save Settings'}
         </Button>
 
         {/* Learning Tracks */}
@@ -285,6 +402,8 @@ const Settings = () => {
             ))}
           </div>
         </Card>
+          </>
+        )}
       </main>
     </div>
   );
