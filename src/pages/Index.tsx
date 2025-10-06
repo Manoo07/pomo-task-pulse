@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useTimer } from "@/hooks/useTimer";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   LearningTrack,
   Priority,
@@ -19,7 +20,7 @@ import {
   Task,
   TaskStatus,
 } from "@/types/pomodoro";
-import { Plus } from "lucide-react";
+import { Plus, LogOut, User, Mail } from "lucide-react";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -37,6 +38,7 @@ const defaultSettings: Settings = {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [settings] = useLocalStorage<Settings>(
     "pomodoro-settings",
     defaultSettings
@@ -178,36 +180,62 @@ const Index = () => {
             </div>
             <h1 className="text-xl font-bold text-white">Pomofocus</h1>
           </div>
-          <nav className="flex gap-1">
-            <Button
-              variant="default"
-              className="bg-white/20 text-white hover:bg-white/30 border border-white/10 hover:border-white/20"
-            >
-              Timer
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-white/90 border border-white/10 hover:border-white/20 hover:bg-white/10"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                navigate("/reports");
-              }}
-            >
-              Reports
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-white/90 border border-white/10 hover:border-white/20 hover:bg-white/10"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                navigate("/settings");
-              }}
-            >
-              Settings
-            </Button>
-          </nav>
+          <div className="flex items-center gap-4">
+            {/* User Info */}
+            {user && (
+              <div className="flex items-center gap-2 text-sm text-white/90">
+                <div className="flex items-center gap-1">
+                  <User className="w-4 h-4" />
+                  <span>{user.username}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Mail className="w-4 h-4" />
+                  <span className={user.emailVerified ? 'text-green-400' : 'text-yellow-400'}>
+                    {user.emailVerified ? 'Verified' : 'Unverified'}
+                  </span>
+                </div>
+              </div>
+            )}
+            
+            {/* Navigation */}
+            <nav className="flex gap-1">
+              <Button
+                variant="default"
+                className="bg-white/20 text-white hover:bg-white/30 border border-white/10 hover:border-white/20"
+              >
+                Timer
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-white/90 border border-white/10 hover:border-white/20 hover:bg-white/10"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate("/reports");
+                }}
+              >
+                Reports
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-white/90 border border-white/10 hover:border-white/20 hover:bg-white/10"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate("/settings");
+                }}
+              >
+                Settings
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-white/90 border border-white/10 hover:border-white/20 hover:bg-white/10"
+                onClick={() => logout()}
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </nav>
+          </div>
         </div>
       </header>
 
