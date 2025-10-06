@@ -33,6 +33,7 @@ interface AuthContextType {
   }) => Promise<boolean>;
   logout: () => void;
   refreshToken: () => Promise<boolean>;
+  checkAuthStatus: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -65,6 +66,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (storedUser && accessToken) {
           const userData = JSON.parse(storedUser);
           setUser(userData);
+          
+          // Verify token is still valid by checking auth status
+          checkAuthStatus();
         }
       } catch (error) {
         console.error("Error initializing auth:", error);
@@ -79,6 +83,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     initializeAuth();
   }, []);
+
+  const checkAuthStatus = async (): Promise<void> => {
+    try {
+      const data = await apiClient.getCurrentUser();
+      if (data.success) {
+        const userData = data.data;
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
+      } else {
+        // Token is invalid, try to refresh
+        const refreshSuccess = await refreshToken();
+        if (!refreshSuccess) {
+          logout();
+        }
+      }
+    } catch (error) {
+      console.error("Auth status check failed:", error);
+      // Try to refresh token
+      const refreshSuccess = await refreshToken();
+      if (!refreshSuccess) {
+        logout();
+      }
+    }
+  };
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -181,6 +209,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signup,
     logout,
     refreshToken,
+    checkAuthStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

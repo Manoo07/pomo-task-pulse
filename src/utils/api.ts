@@ -9,9 +9,76 @@ interface ApiRequestOptions {
 }
 
 class ApiClient {
+  private isRefreshing = false;
+  private refreshPromise: Promise<boolean> | null = null;
+
   private getAuthHeaders(): Record<string, string> {
     const token = localStorage.getItem("access_token");
     return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  private async refreshToken(): Promise<boolean> {
+    if (this.isRefreshing && this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.isRefreshing = true;
+    this.refreshPromise = this.performTokenRefresh();
+
+    try {
+      const result = await this.refreshPromise;
+      return result;
+    } finally {
+      this.isRefreshing = false;
+      this.refreshPromise = null;
+    }
+  }
+
+  private async performTokenRefresh(): Promise<boolean> {
+    try {
+      const refreshToken = localStorage.getItem("refresh_token");
+      if (!refreshToken) {
+        this.handleAuthFailure();
+        return false;
+      }
+
+      const response = await fetch(API_ENDPOINTS.AUTH.REFRESH, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!response.ok) {
+        this.handleAuthFailure();
+        return false;
+      }
+
+      const data = await response.json();
+      if (data.success && data.data?.tokens) {
+        localStorage.setItem("access_token", data.data.tokens.accessToken);
+        localStorage.setItem("refresh_token", data.data.tokens.refreshToken);
+        return true;
+      } else {
+        this.handleAuthFailure();
+        return false;
+      }
+    } catch (error) {
+      console.error("Token refresh failed:", error);
+      this.handleAuthFailure();
+      return false;
+    }
+  }
+
+  private handleAuthFailure(): void {
+    // Clear all auth data
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
+    
+    // Redirect to login page
+    window.location.href = "/login";
   }
 
   async request<T>(url: string, options: ApiRequestOptions = {}): Promise<T> {
@@ -37,6 +104,36 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
+
+      // Handle 401 Unauthorized - token expired
+      if (response.status === 401 && requireAuth) {
+        console.log("Token expired, attempting refresh...");
+        
+        const refreshSuccess = await this.refreshToken();
+        if (refreshSuccess) {
+          // Retry the original request with new token
+          const newHeaders = { ...requestHeaders, ...this.getAuthHeaders() };
+          const retryConfig: RequestInit = {
+            method,
+            headers: newHeaders,
+          };
+          
+          if (body && method !== "GET") {
+            retryConfig.body = JSON.stringify(body);
+          }
+          
+          const retryResponse = await fetch(url, retryConfig);
+          if (!retryResponse.ok) {
+            throw new Error(`HTTP error! status: ${retryResponse.status}`);
+          }
+          
+          const retryData = await retryResponse.json();
+          return retryData;
+        } else {
+          // Refresh failed, user will be redirected to login
+          throw new Error("Authentication failed - please login again");
+        }
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -68,13 +165,6 @@ class ApiClient {
     return this.request(API_ENDPOINTS.AUTH.REGISTER, {
       method: "POST",
       body: userData,
-    });
-  }
-
-  async refreshToken(refreshToken: string) {
-    return this.request(API_ENDPOINTS.AUTH.REFRESH, {
-      method: "POST",
-      body: { refreshToken },
     });
   }
 
@@ -166,15 +256,18 @@ class ApiClient {
     });
   }
 
-  async updateTask(id: string, taskData: {
-    title?: string;
-    description?: string;
-    status?: string;
-    priority?: string;
-    estimatedPomodoros?: number;
-    completedPomodoros?: number;
-    trackId?: string;
-  }) {
+  async updateTask(
+    id: string,
+    taskData: {
+      title?: string;
+      description?: string;
+      status?: string;
+      priority?: string;
+      estimatedPomodoros?: number;
+      completedPomodoros?: number;
+      trackId?: string;
+    }
+  ) {
     return this.request(API_ENDPOINTS.TASKS.UPDATE(id), {
       method: "PUT",
       body: taskData,
@@ -254,10 +347,7 @@ class ApiClient {
     });
   }
 
-  async getSessionStats(params?: {
-    startDate?: string;
-    endDate?: string;
-  }) {
+  async getSessionStats(params?: { startDate?: string; endDate?: string }) {
     const url = new URL(API_ENDPOINTS.SESSIONS.STATS);
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -297,12 +387,15 @@ class ApiClient {
     });
   }
 
-  async updateTrack(id: string, trackData: {
-    name?: string;
-    description?: string;
-    color?: string;
-    icon?: string;
-  }) {
+  async updateTrack(
+    id: string,
+    trackData: {
+      name?: string;
+      description?: string;
+      color?: string;
+      icon?: string;
+    }
+  ) {
     return this.request(API_ENDPOINTS.TRACKS.UPDATE(id), {
       method: "PUT",
       body: trackData,
