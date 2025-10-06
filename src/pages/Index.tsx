@@ -12,6 +12,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useTimer } from "@/hooks/useTimer";
+import { apiClient } from "@/utils/api";
 import {
   LearningTrack,
   Priority,
@@ -21,7 +22,7 @@ import {
   TaskStatus,
 } from "@/types/pomodoro";
 import { LogOut, Mail, Plus, User } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const defaultSettings: Settings = {
@@ -43,20 +44,50 @@ const Index = () => {
     "pomodoro-settings",
     defaultSettings
   );
-  const [tasks, setTasks] = useLocalStorage<Task[]>("pomodoro-tasks", []);
-  const [sessions, setSessions] = useLocalStorage<Session[]>(
-    "pomodoro-sessions",
-    []
-  );
-  const [tracks] = useLocalStorage<LearningTrack[]>("learning-tracks", [
-    { id: "1", name: "Machine Learning" },
-    { id: "2", name: "Computer Vision" },
-    { id: "3", name: "LLMs & NLP" },
-  ]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [tracks, setTracks] = useState<LearningTrack[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentTaskId, setCurrentTaskId] = useState<string | undefined>();
 
   // Ref for timer start button
   const startButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Load data from API on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // Load tasks, tracks, and sessions in parallel
+        const [tasksResponse, tracksResponse, sessionsResponse] = await Promise.all([
+          apiClient.getTasks(),
+          apiClient.getTracks(),
+          apiClient.getSessionHistory({ limit: 50 })
+        ]);
+
+        if (tasksResponse.success) {
+          setTasks(tasksResponse.data || []);
+        }
+        
+        if (tracksResponse.success) {
+          setTracks(tracksResponse.data || []);
+        }
+        
+        if (sessionsResponse.success) {
+          setSessions(sessionsResponse.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to load data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user]);
 
   // Task form state
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -73,82 +104,115 @@ const Index = () => {
   };
 
   // Task management functions
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     if (!newTaskTitle.trim() || !newTaskTrack) {
       return;
     }
 
-    const estimate = parseFloat(newTaskEstimate) || 1;
+    try {
+      const estimate = parseFloat(newTaskEstimate) || 1;
+      
+      const taskData = {
+        title: newTaskTitle.trim(),
+        description: "",
+        priority: newTaskPriority === "none" ? "MEDIUM" : newTaskPriority.toUpperCase(),
+        estimatedPomodoros: estimate,
+        trackId: newTaskTrack,
+      };
 
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: newTaskTitle.trim(),
-      trackId: newTaskTrack,
-      priority: newTaskPriority,
-      estimatedPomodoros: estimate,
-      completedPomodoros: 0,
-      status: "todo",
-      completed: false,
-      orderIndex: tasks.length,
-      forDate: new Date().toISOString().split("T")[0],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    setTasks((prev) => [...prev, newTask]);
-    setNewTaskTitle("");
-    setNewTaskTrack("");
-    setNewTaskPriority("none");
-    setNewTaskEstimate("1");
-  };
-
-  const handleDeleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-    if (currentTaskId === id) {
-      setCurrentTaskId(undefined);
+      const response = await apiClient.createTask(taskData);
+      
+      if (response.success) {
+        setTasks((prev) => [...prev, response.data]);
+        setNewTaskTitle("");
+        setNewTaskTrack("");
+        setNewTaskPriority("none");
+        setNewTaskEstimate("1");
+      }
+    } catch (error) {
+      console.error("Failed to create task:", error);
     }
   };
 
-  const handleCompleteTask = (id: string) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id
-          ? {
-              ...task,
-              completed: true,
-              status: "done" as TaskStatus,
-              updatedAt: new Date().toISOString(),
-            }
-          : task
-      )
-    );
-
-    // Clear current task if it was completed
-    if (currentTaskId === id) {
-      setCurrentTaskId(undefined);
-    }
-  };
-
-  const handleStatusChange = (id: string, status: TaskStatus) => {
-    setTasks((prev) =>
-      prev.map((task) => {
-        if (task.id === id) {
-          // If moving a task to DOING, move any current DOING task back to TODO
-          if (status === "doing") {
-            return { ...task, status, updatedAt: new Date().toISOString() };
-          }
-          return { ...task, status, updatedAt: new Date().toISOString() };
-        } else if (status === "doing" && task.status === "doing") {
-          // Move any other DOING task back to TODO
-          return {
-            ...task,
-            status: "todo",
-            updatedAt: new Date().toISOString(),
-          };
+  const handleDeleteTask = async (id: string) => {
+    try {
+      const response = await apiClient.deleteTask(id);
+      
+      if (response.success) {
+        setTasks((prev) => prev.filter((t) => t.id !== id));
+        if (currentTaskId === id) {
+          setCurrentTaskId(undefined);
         }
-        return task;
-      })
-    );
+      }
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+    }
+  };
+
+  const handleCompleteTask = async (id: string) => {
+    try {
+      const response = await apiClient.updateTask(id, {
+        status: "COMPLETED",
+        completedPomodoros: tasks.find(t => t.id === id)?.estimatedPomodoros || 0
+      });
+      
+      if (response.success) {
+        setTasks((prev) =>
+          prev.map((task) =>
+            task.id === id
+              ? {
+                  ...task,
+                  completed: true,
+                  status: "done" as TaskStatus,
+                  updatedAt: new Date().toISOString(),
+                }
+              : task
+          )
+        );
+
+        // Clear current task if it was completed
+        if (currentTaskId === id) {
+          setCurrentTaskId(undefined);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to complete task:", error);
+    }
+  };
+
+  const handleStatusChange = async (id: string, status: TaskStatus) => {
+    try {
+      // Convert frontend status to backend status
+      const backendStatus = status === "todo" ? "TODO" : 
+                           status === "doing" ? "IN_PROGRESS" : 
+                           status === "done" ? "COMPLETED" : "TODO";
+
+      const response = await apiClient.updateTask(id, { status: backendStatus });
+      
+      if (response.success) {
+        setTasks((prev) =>
+          prev.map((task) => {
+            if (task.id === id) {
+              // If moving a task to DOING, move any current DOING task back to TODO
+              if (status === "doing") {
+                return { ...task, status, updatedAt: new Date().toISOString() };
+              }
+              return { ...task, status, updatedAt: new Date().toISOString() };
+            } else if (status === "doing" && task.status === "doing") {
+              // Move any other DOING task back to TODO
+              return {
+                ...task,
+                status: "todo",
+                updatedAt: new Date().toISOString(),
+              };
+            }
+            return task;
+          })
+        );
+      }
+    } catch (error) {
+      console.error("Failed to update task status:", error);
+    }
   };
 
   const {
@@ -188,12 +252,12 @@ const Index = () => {
                   <User className="w-4 h-4" />
                   <span>{user.username}</span>
                 </div>
-                  <div className="flex items-center gap-1">
-                    <Mail className="w-4 h-4" />
-                    <span className="text-green-400">
-                      {user.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </div>
+                <div className="flex items-center gap-1">
+                  <Mail className="w-4 h-4" />
+                  <span className="text-green-400">
+                    {user.isActive ? "Active" : "Inactive"}
+                  </span>
+                </div>
               </div>
             )}
 
@@ -348,15 +412,24 @@ const Index = () => {
 
         {/* Kanban Board */}
         <div className="mt-12">
-          <KanbanBoard
-            tasks={tasks}
-            tracks={tracks}
-            currentTaskId={currentTaskId}
-            onSelectTask={setCurrentTaskId}
-            onCompleteTask={handleCompleteTask}
-            onDeleteTask={handleDeleteTask}
-            onStatusChange={handleStatusChange}
-          />
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading your tasks...</p>
+              </div>
+            </div>
+          ) : (
+            <KanbanBoard
+              tasks={tasks}
+              tracks={tracks}
+              currentTaskId={currentTaskId}
+              onSelectTask={setCurrentTaskId}
+              onCompleteTask={handleCompleteTask}
+              onDeleteTask={handleDeleteTask}
+              onStatusChange={handleStatusChange}
+            />
+          )}
         </div>
       </main>
     </div>
