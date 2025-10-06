@@ -12,6 +12,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useTimer } from "@/hooks/useTimer";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import {
   LearningTrack,
   Priority,
@@ -50,6 +51,97 @@ const Index = () => {
   const [tracks, setTracks] = useState<LearningTrack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentTaskId, setCurrentTaskId] = useState<string | undefined>();
+
+  // WebSocket integration
+  const { isConnected: wsConnected, sendMessage: wsSendMessage } = useWebSocket({
+    token: user?.accessToken || '',
+    onMessage: (message) => {
+      console.log('WebSocket message received:', message);
+      
+      switch (message.type) {
+        case 'TASK_CREATED':
+          setTasks(prev => [...prev, message.data]);
+          break;
+          
+        case 'TASK_UPDATED':
+          setTasks(prev =>
+            prev.map(task =>
+              task.id === message.data.id ? message.data : task
+            )
+          );
+          break;
+          
+        case 'TASK_DELETED':
+          setTasks(prev =>
+            prev.filter(task => task.id !== message.data.taskId)
+          );
+          break;
+          
+        case 'TASK_STATUS_CHANGED':
+          setTasks(prev =>
+            prev.map(task =>
+              task.id === message.data.taskId
+                ? { ...task, status: message.data.status }
+                : task
+            )
+          );
+          break;
+          
+        case 'TRACK_CREATED':
+          setTracks(prev => [...prev, message.data]);
+          break;
+          
+        case 'TRACK_UPDATED':
+          setTracks(prev =>
+            prev.map(track =>
+              track.id === message.data.id ? message.data : track
+            )
+          );
+          break;
+          
+        case 'TRACK_DELETED':
+          setTracks(prev =>
+            prev.filter(track => track.id !== message.data.trackId)
+          );
+          break;
+          
+        case 'SESSION_START':
+          // Handle session start - could update UI state
+          console.log('Session started:', message.data);
+          break;
+          
+        case 'SESSION_END':
+          // Handle session end - update task completed pomodoros
+          if (message.data.taskId) {
+            setTasks(prev =>
+              prev.map(task =>
+                task.id === message.data.taskId
+                  ? { ...task, completedPomodoros: message.data.completedPomodoros }
+                  : task
+              )
+            );
+          }
+          break;
+          
+        case 'NOTIFICATION':
+          // Show notification to user
+          console.log('Notification:', message.data.message);
+          break;
+          
+        default:
+          console.log('Unhandled WebSocket message type:', message.type);
+      }
+    },
+    onConnect: () => {
+      console.log('WebSocket connected - real-time sync enabled');
+    },
+    onDisconnect: () => {
+      console.log('WebSocket disconnected - falling back to polling');
+    },
+    onError: (error) => {
+      console.error('WebSocket error:', error);
+    },
+  });
 
   // Ref for timer start button
   const startButtonRef = useRef<HTMLButtonElement>(null);
@@ -342,8 +434,13 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Debug: Log current state */}
-      {console.log("Current state:", { tasks: tasks.length, tracks: tracks.length, sessions: sessions.length, isLoading })}
-      
+      {console.log("Current state:", {
+        tasks: tasks.length,
+        tracks: tracks.length,
+        sessions: sessions.length,
+        isLoading,
+      })}
+
       {/* Sticky Header */}
       <header className="sticky top-0 z-60 border-b border-white/10 bg-card/95">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -357,6 +454,16 @@ const Index = () => {
             <h1 className="text-xl font-bold text-white">Pomofocus</h1>
           </div>
           <div className="flex items-center gap-4">
+            {/* WebSocket Connection Status */}
+            <div className="flex items-center gap-2 text-sm">
+              <div className={`w-2 h-2 rounded-full ${
+                wsConnected ? 'bg-green-500' : 'bg-red-500'
+              }`}></div>
+              <span className="text-white/70">
+                {wsConnected ? 'Live Sync' : 'Offline'}
+              </span>
+            </div>
+
             {/* User Info */}
             {user && (
               <div className="flex items-center gap-2 text-sm text-white/90">
@@ -402,6 +509,17 @@ const Index = () => {
                 }}
               >
                 Settings
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-white/90 border border-white/10 hover:border-white/20 hover:bg-white/10"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate("/websocket-test");
+                }}
+              >
+                WS Test
               </Button>
               <Button
                 variant="ghost"

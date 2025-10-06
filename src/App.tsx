@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import SignUp from "./pages/SignUp";
+import { WebSocketTest } from "./pages/WebSocketTest";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/websocket-test"
+              element={
+                <ProtectedRoute>
+                  <WebSocketTest />
                 </ProtectedRoute>
               }
             />
