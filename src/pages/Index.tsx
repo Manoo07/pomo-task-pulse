@@ -81,9 +81,14 @@ const Index = () => {
           const tasksData = Array.isArray((tasksResponse as any).data)
             ? (tasksResponse as any).data
             : [];
+          console.log("Parsed tasks data:", tasksData);
+          console.log("Tasks count:", tasksData.length);
           setTasks(tasksData);
         } else {
-          console.error("Failed to load tasks:", (tasksResponse as any).message);
+          console.error(
+            "Failed to load tasks:",
+            (tasksResponse as any).message
+          );
           setTasks([]);
         }
 
@@ -91,9 +96,14 @@ const Index = () => {
           const tracksData = Array.isArray((tracksResponse as any).data?.tracks)
             ? (tracksResponse as any).data.tracks
             : [];
+          console.log("Parsed tracks data:", tracksData);
+          console.log("Tracks count:", tracksData.length);
           setTracks(tracksData);
         } else {
-          console.error("Failed to load tracks:", (tracksResponse as any).message);
+          console.error(
+            "Failed to load tracks:",
+            (tracksResponse as any).message
+          );
           setTracks([]);
         }
 
@@ -101,9 +111,14 @@ const Index = () => {
           const sessionsData = Array.isArray((sessionsResponse as any).data)
             ? (sessionsResponse as any).data
             : [];
+          console.log("Parsed sessions data:", sessionsData);
+          console.log("Sessions count:", sessionsData.length);
           setSessions(sessionsData);
         } else {
-          console.error("Failed to load sessions:", (sessionsResponse as any).message);
+          console.error(
+            "Failed to load sessions:",
+            (sessionsResponse as any).message
+          );
           setSessions([]);
         }
       } catch (error) {
@@ -326,6 +341,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Debug: Log current state */}
+      {console.log("Current state:", { tasks: tasks.length, tracks: tracks.length, sessions: sessions.length, isLoading })}
+      
       {/* Sticky Header */}
       <header className="sticky top-0 z-60 border-b border-white/10 bg-card/95">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
