@@ -1,3 +1,4 @@
+import { apiClient } from "@/utils/api";
 import React, {
   createContext,
   ReactNode,
@@ -5,14 +6,17 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { apiClient } from "@/utils/api";
 
 interface User {
   id: string;
   email: string;
   username: string;
-  emailVerified: boolean;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string;
+  isActive: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 interface AuthContextType {
@@ -20,7 +24,13 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string) => Promise<boolean>;
+  signup: (userData: {
+    email: string;
+    username: string;
+    password: string;
+    firstName?: string;
+    lastName?: string;
+  }) => Promise<boolean>;
   logout: () => void;
   refreshToken: () => Promise<boolean>;
 }
@@ -78,8 +88,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (data.success) {
         // Store tokens and user data
-        localStorage.setItem("access_token", data.data.tokens.access_token);
-        localStorage.setItem("refresh_token", data.data.tokens.refresh_token);
+        localStorage.setItem("access_token", data.data.tokens.accessToken);
+        localStorage.setItem("refresh_token", data.data.tokens.refreshToken);
         localStorage.setItem("user", JSON.stringify(data.data.user));
 
         setUser(data.data.user);
@@ -96,16 +106,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const signup = async (email: string, password: string): Promise<boolean> => {
+  const signup = async (userData: {
+    email: string;
+    username: string;
+    password: string;
+    firstName?: string;
+    lastName?: string;
+  }): Promise<boolean> => {
     try {
       setIsLoading(true);
 
-      const data = await apiClient.register(email, password);
+      const data = await apiClient.register(userData);
 
       if (data.success) {
         // Store tokens and user data
-        localStorage.setItem("access_token", data.data.tokens.access_token);
-        localStorage.setItem("refresh_token", data.data.tokens.refresh_token);
+        localStorage.setItem("access_token", data.data.tokens.accessToken);
+        localStorage.setItem("refresh_token", data.data.tokens.refreshToken);
         localStorage.setItem("user", JSON.stringify(data.data.user));
 
         setUser(data.data.user);
@@ -142,8 +158,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (data.success) {
         // Update tokens
-        localStorage.setItem("access_token", data.data.tokens.access_token);
-        localStorage.setItem("refresh_token", data.data.tokens.refresh_token);
+        localStorage.setItem("access_token", data.data.tokens.accessToken);
+        localStorage.setItem("refresh_token", data.data.tokens.refreshToken);
         return true;
       } else {
         // Refresh failed, logout user

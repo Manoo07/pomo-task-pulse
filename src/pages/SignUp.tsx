@@ -1,56 +1,76 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Lock, Eye, EyeOff, User, CheckCircle } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
+import { CheckCircle, Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const SignUp = () => {
   const navigate = useNavigate();
   const { signup, isLoading } = useAuth();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
+    email: "",
+    username: "",
+    password: "",
+    confirmPassword: "",
+    firstName: "",
+    lastName: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
     // Clear error when user starts typing
-    if (error) setError('');
+    if (error) setError("");
   };
 
   const validateForm = () => {
-    if (!formData.email || !formData.password || !formData.confirmPassword) {
-      setError('All fields are required');
+    if (!formData.email || !formData.username || !formData.password || !formData.confirmPassword) {
+      setError("All fields are required");
       return false;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return false;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError("Password must be at least 6 characters long");
+      return false;
+    }
+
+    if (formData.username.length < 3) {
+      setError("Username must be at least 3 characters long");
       return false;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setError('Please enter a valid email address');
+      setError("Please enter a valid email address");
+      return false;
+    }
+
+    const usernameRegex = /^[a-zA-Z0-9]+$/;
+    if (!usernameRegex.test(formData.username)) {
+      setError("Username can only contain letters and numbers");
       return false;
     }
 
@@ -59,23 +79,29 @@ const SignUp = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
-    setError('');
+    setError("");
 
-    const success = await signup(formData.email, formData.password);
-    
+    const success = await signup({
+      email: formData.email,
+      username: formData.username,
+      password: formData.password,
+      firstName: formData.firstName || undefined,
+      lastName: formData.lastName || undefined,
+    });
+
     if (success) {
       setSuccess(true);
       setEmailSent(true);
-      
+
       // Show success message for 3 seconds then navigate
       setTimeout(() => {
-        navigate('/');
+        navigate("/");
       }, 3000);
     } else {
-      setError('Registration failed. Please try again.');
+      setError("Registration failed. Please try again.");
     }
   };
 
@@ -90,16 +116,20 @@ const SignUp = () => {
                   <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white">Account Created!</h2>
+                  <h2 className="text-2xl font-bold text-white">
+                    Account Created!
+                  </h2>
                   <p className="text-muted-foreground mt-2">
-                    Welcome to Pomofocus! Your account has been created successfully.
+                    Welcome to Pomofocus! Your account has been created
+                    successfully.
                   </p>
                 </div>
                 {emailSent && (
                   <Alert>
                     <Mail className="h-4 w-4" />
                     <AlertDescription>
-                      Please check your email to verify your account. You can start using the app now!
+                      Please check your email to verify your account. You can
+                      start using the app now!
                     </AlertDescription>
                   </Alert>
                 )}
@@ -127,12 +157,16 @@ const SignUp = () => {
             </div>
             <h1 className="text-2xl font-bold text-white">Pomofocus</h1>
           </div>
-          <p className="text-muted-foreground">Join thousands of focused individuals achieving their goals.</p>
+          <p className="text-muted-foreground">
+            Join thousands of focused individuals achieving their goals.
+          </p>
         </div>
 
         <Card className="border border-white/10 bg-card/95">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Create Account</CardTitle>
+            <CardTitle className="text-2xl text-center">
+              Create Account
+            </CardTitle>
             <CardDescription className="text-center">
               Enter your email and password to get started
             </CardDescription>
@@ -157,6 +191,52 @@ const SignUp = () => {
                 </div>
               </div>
 
+              {/* Username Field */}
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
+                    placeholder="Choose a username"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    className="pl-10 border-white/10 focus:border-primary"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Name Fields */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name (Optional)</Label>
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    placeholder="First name"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    className="border-white/10 focus:border-primary"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name (Optional)</Label>
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    placeholder="Last name"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    className="border-white/10 focus:border-primary"
+                  />
+                </div>
+              </div>
+
               {/* Password Field */}
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
@@ -165,7 +245,7 @@ const SignUp = () => {
                   <Input
                     id="password"
                     name="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     placeholder="Create a password"
                     value={formData.password}
                     onChange={handleInputChange}
@@ -199,7 +279,7 @@ const SignUp = () => {
                   <Input
                     id="confirmPassword"
                     name="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
+                    type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
@@ -241,13 +321,15 @@ const SignUp = () => {
                     Creating Account...
                   </>
                 ) : (
-                  'Create Account'
+                  "Create Account"
                 )}
               </Button>
 
               {/* Sign In Link */}
               <div className="text-center text-sm">
-                <span className="text-muted-foreground">Already have an account? </span>
+                <span className="text-muted-foreground">
+                  Already have an account?{" "}
+                </span>
                 <Link
                   to="/login"
                   className="text-primary hover:text-primary/80 font-medium"
@@ -258,12 +340,18 @@ const SignUp = () => {
 
               {/* Terms and Privacy */}
               <div className="text-center text-xs text-muted-foreground">
-                By creating an account, you agree to our{' '}
-                <Link to="/terms" className="text-primary hover:text-primary/80">
+                By creating an account, you agree to our{" "}
+                <Link
+                  to="/terms"
+                  className="text-primary hover:text-primary/80"
+                >
                   Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link to="/privacy" className="text-primary hover:text-primary/80">
+                </Link>{" "}
+                and{" "}
+                <Link
+                  to="/privacy"
+                  className="text-primary hover:text-primary/80"
+                >
                   Privacy Policy
                 </Link>
               </div>
@@ -273,7 +361,9 @@ const SignUp = () => {
 
         {/* Features Preview */}
         <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-white/10">
-          <h3 className="text-sm font-medium text-muted-foreground mb-3">What you'll get:</h3>
+          <h3 className="text-sm font-medium text-muted-foreground mb-3">
+            What you'll get:
+          </h3>
           <div className="space-y-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>

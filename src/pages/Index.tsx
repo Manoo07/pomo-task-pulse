@@ -9,9 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useTimer } from "@/hooks/useTimer";
-import { useAuth } from "@/contexts/AuthContext";
 import {
   LearningTrack,
   Priority,
@@ -20,7 +20,7 @@ import {
   Task,
   TaskStatus,
 } from "@/types/pomodoro";
-import { Plus, LogOut, User, Mail } from "lucide-react";
+import { LogOut, Mail, Plus, User } from "lucide-react";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -188,15 +188,15 @@ const Index = () => {
                   <User className="w-4 h-4" />
                   <span>{user.username}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Mail className="w-4 h-4" />
-                  <span className={user.emailVerified ? 'text-green-400' : 'text-yellow-400'}>
-                    {user.emailVerified ? 'Verified' : 'Unverified'}
-                  </span>
-                </div>
+                  <div className="flex items-center gap-1">
+                    <Mail className="w-4 h-4" />
+                    <span className="text-green-400">
+                      {user.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
               </div>
             )}
-            
+
             {/* Navigation */}
             <nav className="flex gap-1">
               <Button
