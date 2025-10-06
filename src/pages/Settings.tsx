@@ -48,9 +48,13 @@ const Settings = () => {
           apiClient.getTracks(),
         ]);
 
+        // Debug: Log the actual API responses
+        console.log("Settings API Response:", settingsResponse);
+        console.log("Tracks API Response:", tracksResponse);
+
         if ((settingsResponse as any).success) {
-          const settingsData =
-            (settingsResponse as any).data || defaultSettings;
+          const settingsData = (settingsResponse as any).data?.settings || defaultSettings;
+          console.log("Parsed settings data:", settingsData);
           setSettings(settingsData);
           setLocalSettings(settingsData);
         }
@@ -227,103 +231,103 @@ const Settings = () => {
               </div>
 
               <div className="space-y-6">
-                 <div className="flex items-center justify-between">
-                   <div className="flex-1">
-                     <Label className="text-white font-medium">
-                       Pomodoro Duration
-                     </Label>
-                     <p className="text-white/70 text-sm">
-                       Length of focus session
-                     </p>
-                   </div>
-                   <div className="flex items-center gap-2 ml-4">
-                     <Input
-                       type="number"
-                       value={localSettings.pomodoroDuration}
-                       onChange={(e) =>
-                         setLocalSettings({
-                           ...localSettings,
-                           pomodoroDuration: parseInt(e.target.value),
-                         })
-                       }
-                       className="w-20 bg-white/10 border-white/20 text-white text-center"
-                     />
-                     <span className="text-white/90 w-16">minutes</span>
-                   </div>
-                 </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Label className="text-white font-medium">
+                      Pomodoro Duration
+                    </Label>
+                    <p className="text-white/70 text-sm">
+                      Length of focus session
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <Input
+                      type="number"
+                      value={localSettings.pomodoroDuration}
+                      onChange={(e) =>
+                        setLocalSettings({
+                          ...localSettings,
+                          pomodoroDuration: parseInt(e.target.value),
+                        })
+                      }
+                      className="w-20 bg-white/10 border-white/20 text-white text-center"
+                    />
+                    <span className="text-white/90 w-16">minutes</span>
+                  </div>
+                </div>
 
-                 <div className="flex items-center justify-between">
-                   <div className="flex-1">
-                     <Label className="text-white font-medium">
-                       Short Break
-                     </Label>
-                     <p className="text-white/70 text-sm">
-                       Length of short break
-                     </p>
-                   </div>
-                   <div className="flex items-center gap-2 ml-4">
-                     <Input
-                       type="number"
-                       value={localSettings.shortBreakDuration}
-                       onChange={(e) =>
-                         setLocalSettings({
-                           ...localSettings,
-                           shortBreakDuration: parseInt(e.target.value),
-                         })
-                       }
-                       className="w-20 bg-white/10 border-white/20 text-white text-center"
-                     />
-                     <span className="text-white/90 w-16">minutes</span>
-                   </div>
-                 </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Label className="text-white font-medium">
+                      Short Break
+                    </Label>
+                    <p className="text-white/70 text-sm">
+                      Length of short break
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <Input
+                      type="number"
+                      value={localSettings.shortBreakDuration}
+                      onChange={(e) =>
+                        setLocalSettings({
+                          ...localSettings,
+                          shortBreakDuration: parseInt(e.target.value),
+                        })
+                      }
+                      className="w-20 bg-white/10 border-white/20 text-white text-center"
+                    />
+                    <span className="text-white/90 w-16">minutes</span>
+                  </div>
+                </div>
 
-                 <div className="flex items-center justify-between">
-                   <div className="flex-1">
-                     <Label className="text-white font-medium">Long Break</Label>
-                     <p className="text-white/70 text-sm">
-                       Length of long break
-                     </p>
-                   </div>
-                   <div className="flex items-center gap-2 ml-4">
-                     <Input
-                       type="number"
-                       value={localSettings.longBreakDuration}
-                       onChange={(e) =>
-                         setLocalSettings({
-                           ...localSettings,
-                           longBreakDuration: parseInt(e.target.value),
-                         })
-                       }
-                       className="w-20 bg-white/10 border-white/20 text-white text-center"
-                     />
-                     <span className="text-white/90 w-16">minutes</span>
-                   </div>
-                 </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Label className="text-white font-medium">Long Break</Label>
+                    <p className="text-white/70 text-sm">
+                      Length of long break
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <Input
+                      type="number"
+                      value={localSettings.longBreakDuration}
+                      onChange={(e) =>
+                        setLocalSettings({
+                          ...localSettings,
+                          longBreakDuration: parseInt(e.target.value),
+                        })
+                      }
+                      className="w-20 bg-white/10 border-white/20 text-white text-center"
+                    />
+                    <span className="text-white/90 w-16">minutes</span>
+                  </div>
+                </div>
 
-                 <div className="flex items-center justify-between">
-                   <div className="flex-1">
-                     <Label className="text-white font-medium">
-                       Long Break Interval
-                     </Label>
-                     <p className="text-white/70 text-sm">
-                       Long break after N pomodoros
-                     </p>
-                   </div>
-                   <div className="flex items-center gap-2 ml-4">
-                     <Input
-                       type="number"
-                       value={localSettings.longBreakInterval}
-                       onChange={(e) =>
-                         setLocalSettings({
-                           ...localSettings,
-                           longBreakInterval: parseInt(e.target.value),
-                         })
-                       }
-                       className="w-20 bg-white/10 border-white/20 text-white text-center"
-                     />
-                     <span className="text-white/90 w-20">pomodoros</span>
-                   </div>
-                 </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Label className="text-white font-medium">
+                      Long Break Interval
+                    </Label>
+                    <p className="text-white/70 text-sm">
+                      Long break after N pomodoros
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <Input
+                      type="number"
+                      value={localSettings.longBreakInterval}
+                      onChange={(e) =>
+                        setLocalSettings({
+                          ...localSettings,
+                          longBreakInterval: parseInt(e.target.value),
+                        })
+                      }
+                      className="w-20 bg-white/10 border-white/20 text-white text-center"
+                    />
+                    <span className="text-white/90 w-20">pomodoros</span>
+                  </div>
+                </div>
               </div>
             </Card>
 
@@ -335,49 +339,49 @@ const Settings = () => {
               </div>
 
               <div className="space-y-6">
-                 <div className="flex items-center justify-between">
-                   <div className="flex-1">
-                     <Label className="text-white font-medium">
-                       Auto-start Breaks
-                     </Label>
-                     <p className="text-white/70 text-sm">
-                       Automatically start breaks after pomodoro
-                     </p>
-                   </div>
-                   <div className="ml-4">
-                     <Switch
-                       checked={localSettings.autoStartBreak}
-                       onCheckedChange={(checked) =>
-                         setLocalSettings({
-                           ...localSettings,
-                           autoStartBreak: checked,
-                         })
-                       }
-                     />
-                   </div>
-                 </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Label className="text-white font-medium">
+                      Auto-start Breaks
+                    </Label>
+                    <p className="text-white/70 text-sm">
+                      Automatically start breaks after pomodoro
+                    </p>
+                  </div>
+                  <div className="ml-4">
+                    <Switch
+                      checked={localSettings.autoStartBreak}
+                      onCheckedChange={(checked) =>
+                        setLocalSettings({
+                          ...localSettings,
+                          autoStartBreak: checked,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
 
-                 <div className="flex items-center justify-between">
-                   <div className="flex-1">
-                     <Label className="text-white font-medium">
-                       Auto-start Pomodoros
-                     </Label>
-                     <p className="text-white/70 text-sm">
-                       Automatically start pomodoro after break
-                     </p>
-                   </div>
-                   <div className="ml-4">
-                     <Switch
-                       checked={localSettings.autoStartPomodoro}
-                       onCheckedChange={(checked) =>
-                         setLocalSettings({
-                           ...localSettings,
-                           autoStartPomodoro: checked,
-                         })
-                       }
-                     />
-                   </div>
-                 </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Label className="text-white font-medium">
+                      Auto-start Pomodoros
+                    </Label>
+                    <p className="text-white/70 text-sm">
+                      Automatically start pomodoro after break
+                    </p>
+                  </div>
+                  <div className="ml-4">
+                    <Switch
+                      checked={localSettings.autoStartPomodoro}
+                      onCheckedChange={(checked) =>
+                        setLocalSettings({
+                          ...localSettings,
+                          autoStartPomodoro: checked,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
               </div>
             </Card>
 
@@ -391,25 +395,25 @@ const Settings = () => {
               </div>
 
               <div className="space-y-6">
-                 <div className="flex items-center justify-between">
-                   <div className="flex-1">
-                     <Label className="text-white font-medium">End Sound</Label>
-                     <p className="text-white/70 text-sm">
-                       Play sound when timer ends
-                     </p>
-                   </div>
-                   <div className="ml-4">
-                     <Switch
-                       checked={localSettings.soundEnabled}
-                       onCheckedChange={(checked) =>
-                         setLocalSettings({
-                           ...localSettings,
-                           soundEnabled: checked,
-                         })
-                       }
-                     />
-                   </div>
-                 </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Label className="text-white font-medium">End Sound</Label>
+                    <p className="text-white/70 text-sm">
+                      Play sound when timer ends
+                    </p>
+                  </div>
+                  <div className="ml-4">
+                    <Switch
+                      checked={localSettings.soundEnabled}
+                      onCheckedChange={(checked) =>
+                        setLocalSettings({
+                          ...localSettings,
+                          soundEnabled: checked,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -429,27 +433,27 @@ const Settings = () => {
                   />
                 </div>
 
-                 <div className="flex items-center justify-between">
-                   <div className="flex-1">
-                     <Label className="text-white font-medium">
-                       Desktop Notifications
-                     </Label>
-                     <p className="text-white/70 text-sm">
-                       Show browser notifications
-                     </p>
-                   </div>
-                   <div className="ml-4">
-                     <Switch
-                       checked={localSettings.notificationsEnabled}
-                       onCheckedChange={(checked) =>
-                         setLocalSettings({
-                           ...localSettings,
-                           notificationsEnabled: checked,
-                         })
-                       }
-                     />
-                   </div>
-                 </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Label className="text-white font-medium">
+                      Desktop Notifications
+                    </Label>
+                    <p className="text-white/70 text-sm">
+                      Show browser notifications
+                    </p>
+                  </div>
+                  <div className="ml-4">
+                    <Switch
+                      checked={localSettings.notificationsEnabled}
+                      onCheckedChange={(checked) =>
+                        setLocalSettings({
+                          ...localSettings,
+                          notificationsEnabled: checked,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
               </div>
             </Card>
 
