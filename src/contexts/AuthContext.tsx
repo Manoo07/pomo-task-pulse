@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { apiClient } from "@/utils/api";
 
 interface User {
   id: string;
@@ -23,7 +30,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -42,19 +49,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const initializeAuth = () => {
       try {
-        const storedUser = localStorage.getItem('user');
-        const accessToken = localStorage.getItem('access_token');
-        
+        const storedUser = localStorage.getItem("user");
+        const accessToken = localStorage.getItem("access_token");
+
         if (storedUser && accessToken) {
           const userData = JSON.parse(storedUser);
           setUser(userData);
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error("Error initializing auth:", error);
         // Clear invalid data
-        localStorage.removeItem('user');
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
+        localStorage.removeItem("user");
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
       } finally {
         setIsLoading(false);
       }
@@ -66,32 +73,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      
-      // Simulate API call - replace with actual backend integration
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
 
-      const data = await response.json();
+      const data = await apiClient.login(email, password);
 
       if (data.success) {
         // Store tokens and user data
-        localStorage.setItem('access_token', data.data.tokens.access_token);
-        localStorage.setItem('refresh_token', data.data.tokens.refresh_token);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
-        
+        localStorage.setItem("access_token", data.data.tokens.access_token);
+        localStorage.setItem("refresh_token", data.data.tokens.refresh_token);
+        localStorage.setItem("user", JSON.stringify(data.data.user));
+
         setUser(data.data.user);
         return true;
       } else {
-        console.error('Login failed:', data.message);
+        console.error("Login failed:", data.message);
         return false;
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       return false;
     } finally {
       setIsLoading(false);
@@ -101,32 +99,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signup = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      
-      // Simulate API call - replace with actual backend integration
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
 
-      const data = await response.json();
+      const data = await apiClient.register(email, password);
 
       if (data.success) {
         // Store tokens and user data
-        localStorage.setItem('access_token', data.data.tokens.access_token);
-        localStorage.setItem('refresh_token', data.data.tokens.refresh_token);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
-        
+        localStorage.setItem("access_token", data.data.tokens.access_token);
+        localStorage.setItem("refresh_token", data.data.tokens.refresh_token);
+        localStorage.setItem("user", JSON.stringify(data.data.user));
+
         setUser(data.data.user);
         return true;
       } else {
-        console.error('Signup failed:', data.message);
+        console.error("Signup failed:", data.message);
         return false;
       }
     } catch (error) {
-      console.error('Signup error:', error);
+      console.error("Signup error:", error);
       return false;
     } finally {
       setIsLoading(false);
@@ -135,34 +124,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     // Clear all auth data
-    localStorage.removeItem('user');
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    localStorage.removeItem("user");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     setUser(null);
   };
 
   const refreshToken = async (): Promise<boolean> => {
     try {
-      const refreshTokenValue = localStorage.getItem('refresh_token');
-      
+      const refreshTokenValue = localStorage.getItem("refresh_token");
+
       if (!refreshTokenValue) {
         return false;
       }
 
-      const response = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refresh_token: refreshTokenValue }),
-      });
-
-      const data = await response.json();
+      const data = await apiClient.refreshToken(refreshTokenValue);
 
       if (data.success) {
         // Update tokens
-        localStorage.setItem('access_token', data.data.tokens.access_token);
-        localStorage.setItem('refresh_token', data.data.tokens.refresh_token);
+        localStorage.setItem("access_token", data.data.tokens.access_token);
+        localStorage.setItem("refresh_token", data.data.tokens.refresh_token);
         return true;
       } else {
         // Refresh failed, logout user
@@ -170,7 +151,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return false;
       }
     } catch (error) {
-      console.error('Token refresh error:', error);
+      console.error("Token refresh error:", error);
       logout();
       return false;
     }
@@ -186,9 +167,5 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     refreshToken,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
